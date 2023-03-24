@@ -1,7 +1,20 @@
-from argmas_auto.communication.preferences.CriterionName import CriterionName
-from argmas_auto.communication.preferences.CriterionValue import CriterionValue
-from argmas_auto.communication.preferences.Item import Item
-from argmas_auto.communication.preferences.Value import Value
+#!/usr/bin/env python3
+
+import os
+import sys
+import inspect
+
+currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+parentdir = os.path.dirname(currentdir)
+parentparentdir = os.path.dirname(parentdir)
+
+sys.path.insert(0, parentdir)
+sys.path.insert(0, parentparentdir)
+
+from communication.preferences.CriterionName import CriterionName
+from communication.preferences.CriterionValue import CriterionValue
+from communication.preferences.Item import Item
+from communication.preferences.Value import Value
 
 
 class Preferences:
@@ -58,7 +71,12 @@ class Preferences:
 
     def most_preferred(self, item_list):
         """Returns the most preferred item from a list."""
-        # To be completed
+        best_item = None
+        for item in item_list:
+            if (best_item is None) or (self.is_preferred_item(item, best_item)):
+                best_item = item
+            else:
+                continue
         return best_item
 
     def is_item_among_top_10_percent(self, item, item_list):
@@ -68,7 +86,16 @@ class Preferences:
         :return: a boolean, True means that the item is among the favourite ones
         """
         # To be completed
-        return is_top_item
+        nb_items = len(item_list)
+        top_10_percent_index = int(0.1 * nb_items)
+        count = 0
+        for other_item in item_list:
+            if self.is_preferred_item(other_item, item):
+                count += 1
+        if count > top_10_percent_index:
+            return False
+        else:
+            return True
 
 
 if __name__ == "__main__":
