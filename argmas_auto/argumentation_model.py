@@ -13,9 +13,17 @@ from argmas_auto.communication.preferences.Item import Item
 from argmas_auto.communication.message.Message import Message
 from argmas_auto.communication.message.MessagePerformative import MessagePerformative
 from argmas_auto.communication.mailbox.Mailbox import Mailbox
-
+from argmas_auto.communication.preferences import CriterionName, CriterionValue
 from argmas_auto.argumentation_agent import ArgumentAgent
 
+
+CRITERION_BOUNDS = {
+    "PRODUCTION_COST" = [1, 100],
+    "CONSUMPTION" = [1, 10],
+    "DURABILITY" = [1, 25],
+    "ENVIRONMENT_IMPACT" = [1, 25],
+    "NOISE" = [1, 10],
+}
 
 class ArgumentModel(Model):
     """
@@ -46,10 +54,24 @@ class ArgumentModel(Model):
             Item("GRAV", "Moteur à gravité inversée"),
             Item("RHYD", "Moteur à rhydonium"),
         ]
-        self.alice = ArgumentAgent(0, self, "Alice", None, dest_name="Bob")
-        self.alice.generate_preferences(self.list_items)
-        self.bob = ArgumentAgent(1, self, "Bob", None, dest_name="Alice")
-        self.bob.generate_preferences(self.list_items)
+
+        for item in self.list_items:
+            # fill the criterion score table at random for each Item
+            item.make_criterion_score_table(CRITERION_BOUNDS)
+
+        # populate CriterionValue objects
+        criterion_value_list = []
+        for item in self.list_items:
+            for crit, value in item.criterion_scores.items():
+                criterion_value_list.append(CriterionValue(item.name, crit, value))
+
+        self.alice = ArgumentAgent(0, self, "Alice", dest_name="Bob", list_items=self.list_items)
+        # self.alice.generate_preferences_(self.list_items)
+        self.alice.generate_preference_profiles(criterion_value_list)
+        self.alice.generate_preferences(criterion_value_list)
+        self.bob = ArgumentAgent(1, self, "Bob", dest_name="Alice", list_items=self.list_items)
+        self.bob.generate_preference_profiles(criterion_value_list)
+        self.bob.generate_preferences(criterion_value_list)
 
         self.schedule.add(self.alice)
         print("[ArgumentModel] Created Agent Alice.")

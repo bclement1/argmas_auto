@@ -1,3 +1,7 @@
+from argmas_auto.communication.preferences import CriterionName
+import random
+
+
 class Item:
     """Item class.
     This class implements the objects about which the argument will be conducted.
@@ -11,6 +15,15 @@ class Item:
         """Creates a new Item."""
         self.__name = name
         self.__description = description
+        self.criterion_scores = {}
+
+    def make_criterion_score_table(self, bounds):
+        """
+        Fill the __criterion_scores attribute.
+        """
+        for criterion in CriterionName:
+            min_value, max_value = bounds[criterion.name]
+            self.criterion_scores[criterion.name] = random.randint(min_value, max_value)
 
     def __str__(self):
         """Returns Item as a String."""
@@ -29,7 +42,9 @@ class Item:
         return preferences.get_value(self, criterion_name)
 
     def get_score(self, preferences):
-        """Returns the score of the Item according to agent preferences."""
+        """
+        Returns the score of the Item according to agent preferences.
+        """
         criterion_weight = 100
         sum_result = 0
         for criterion_name in preferences.get_criterion_name_list():
