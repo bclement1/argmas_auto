@@ -2,8 +2,8 @@
 Implement Arguments.
 """
 
-from arguments.Comparison import Comparison
-from arguments.CoupleValue import CoupleValue
+from argmas_auto.arguments.Comparison import Comparison
+from argmas_auto.arguments.CoupleValue import CoupleValue
 
 
 class Argument:
@@ -40,10 +40,15 @@ class Argument:
         self.couple_values_list.append(CoupleValue(criterion_name, value))
 
     def __str__(self):
+        string = ""
+        if not self.boolean_decision:
+            string += "NOT " + self.item.get_name() + " <= "
+        else:
+            string += self.item.get_name() + " <= "
         premisses = [comp.__str__() for comp in self.comparison_list] + [
             couple_val.__str__() for couple_val in self.couple_values_list
         ]
-        return ", ".join(premisses)
+        return string + ", ".join(premisses)
 
     def list_supporting_proposal(self, item, preferences):
         """

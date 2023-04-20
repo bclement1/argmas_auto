@@ -1,4 +1,4 @@
-from argmas_auto.communication.preferences import CriterionName
+from argmas_auto.communication.preferences.CriterionName import CriterionName
 import random
 
 

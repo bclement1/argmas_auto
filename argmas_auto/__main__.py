@@ -19,6 +19,7 @@ from argmas_auto.argumentation_model import ArgumentModel
 
 if __name__ == "__main__":
     argument_model = ArgumentModel()
+    print("[MAIN]: Model created.")
     # disable instant delivery (asynchronous communications)
     MessageService.get_instance().set_instant_delivery(False)
 
