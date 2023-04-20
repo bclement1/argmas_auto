@@ -1,7 +1,7 @@
 """ 
 Implement Arguments.
 """
-
+from argmas_auto.communication.preferences.Value import Value
 from argmas_auto.arguments.Comparison import Comparison
 from argmas_auto.arguments.CoupleValue import CoupleValue
 
@@ -65,7 +65,7 @@ class Argument:
         ]
         agent_valuation = zip(criterions_names, agent_values)
         for name, value in agent_valuation:
-            if value > 2:
+            if value > Value.AVERAGE:
                 premisses_pro_item.append(CoupleValue(name, value))
         return premisses_pro_item
 
@@ -83,6 +83,6 @@ class Argument:
         ]
         agent_valuation = zip(criterions_names, agent_values)
         for name, value in agent_valuation:
-            if value < 3:
+            if value < Value.AVERAGE:
                 premisses_against_item.append(CoupleValue(name, value))
         return premisses_against_item

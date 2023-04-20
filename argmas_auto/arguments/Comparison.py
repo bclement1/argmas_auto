@@ -23,7 +23,7 @@ class Comparison:
         """
         Comparison as a string.
         """
-        return self.__best_criterion_name + ">" + self.__worst_criterion_name
+        return self.__best_criterion_name.name + ">" + self.__worst_criterion_name.name
 
     def get_best_criterion_name(self):
         """

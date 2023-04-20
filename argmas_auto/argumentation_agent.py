@@ -13,9 +13,10 @@ from argmas_auto.communication.message.Message import Message
 from argmas_auto.communication.message.MessagePerformative import MessagePerformative
 from argmas_auto.communication.mailbox.Mailbox import Mailbox
 from argmas_auto.arguments.Argument import Argument
-from argmas_auto.communication.preferences import Preferences
-from argmas_auto.communication.preferences import Value
-from argmas_auto.communication.preferences import CriterionName, CriterionValue
+from argmas_auto.communication.preferences.Preferences import Preferences
+from argmas_auto.communication.preferences.Value import Value
+from argmas_auto.communication.preferences.CriterionName import CriterionName
+from argmas_auto.communication.preferences.CriterionValue import CriterionValue
 
 
 class ArgumentAgent(CommunicatingAgent):
@@ -73,13 +74,27 @@ class ArgumentAgent(CommunicatingAgent):
             ):
                 # Alice argues for its proposal
                 best_argument = self.support_proposal(self.preferred_item)
-                mess = Message(
-                    self.name,
-                    self.dest_name,
-                    MessagePerformative.ARGUE,
-                    best_argument,
-                )
-                self.send_message(mess)
+                if best_argument:
+                    mess = Message(
+                        self.name,
+                        self.dest_name,
+                        MessagePerformative.ARGUE,
+                        best_argument,
+                    )
+                    self.send_message(mess)
+                else:
+                    self.remove_item_from_choices(item=self.preferred_item)
+                    self.preferred_item = self.preferences.most_preferred(
+                        self.list_items
+                    )
+                    mess = Message(
+                        self.name,
+                        self.dest_name,
+                        MessagePerformative.PROPOSE,
+                        self.preferred_item,
+                    )
+                    self.send_message(mess)
+
             elif (
                 messages
                 and messages[0].get_performative() == MessagePerformative.ACCEPT
@@ -93,7 +108,7 @@ class ArgumentAgent(CommunicatingAgent):
                 )
                 self.send_message(mess)
                 # remove the accepted item from the list of items
-                self.list_items.remove(self.preferred_item)
+                self.remove_item_from_choices(self.preferred_item)
 
         if self.name == "Bob":
             messages = self.get_new_messages()
@@ -103,17 +118,31 @@ class ArgumentAgent(CommunicatingAgent):
                 messages
                 and messages[0].get_performative() == MessagePerformative.PROPOSE
             ):
-                if self.preferences.is_among_top_10_percent(
+                if self.preferences.is_item_among_top_10_percent(
                     item=messages[0].get_content(), item_list=self.list_items
                 ):
                     # item proposed in the top 10% of Bob
-                    mess = Message(
-                        self.name,
-                        self.dest_name,
-                        MessagePerformative.ACCEPT,
-                        messages[0].get_content(),
+                    self.preferred_item = self.preferences.most_preferred(
+                        self.list_items
                     )
-                    self.send_message(mess)
+                    if (
+                        self.preferred_item.get_name()
+                        != messages[0].get_content().get_name()
+                    ):
+                        mess = Message(
+                            self.name,
+                            self.dest_name,
+                            MessagePerformative.PROPOSE,
+                            content=self.preferred_item,
+                        )
+                    else:
+                        mess = Message(
+                            self.name,
+                            self.dest_name,
+                            MessagePerformative.ACCEPT,
+                            messages[0].get_content(),
+                        )
+                        self.send_message(mess)
                 else:
                     # item is not among Agent's favorites: send ASK_WHY
                     mess = Message(
@@ -135,7 +164,33 @@ class ArgumentAgent(CommunicatingAgent):
                     messages[0].get_content(),
                 )
                 self.send_message(mess)
-                self.list_items.remove(messages[0].get_content())
+                self.remove_item_from_choices(messages[0].get_content())
+
+            elif (
+                messages and messages[0].get_performative() == MessagePerformative.ARGUE
+            ):
+                pro_argument = self.parse_argument(
+                    argument_str=messages[0].get_content()
+                )
+                con_arguments = self.attack_argument(pro_argument)
+                if con_arguments:
+                    # Choose one counter-argument at random
+                    chosen_con_arg = random.choice(con_arguments)
+                    mess = Message(
+                        self.name,
+                        self.dest_name,
+                        MessagePerformative.ARGUE,
+                        content=str(chosen_con_arg),
+                    )
+                    self.send_message(mess)
+                else:
+                    mess = Message(
+                        self.name,
+                        self.dest_name,
+                        MessagePerformative.ACCEPT,
+                        pro_argument.item,
+                    )
+                    self.send_message(mess)
 
     def get_preferences(self):
         """
@@ -150,10 +205,8 @@ class ArgumentAgent(CommunicatingAgent):
         for criterion in CriterionName:
             # generate 4 thresholds to distinguish between VERY_BAD, BAD, etc.
             min_value, max_value = bounds[criterion.name]
-            random_numbers = [
-                random.randint(min_value, max_value) for _ in range(len(bounds))
-            ]
-            self.profile_thresholds[criterion.name] = sorted(random_numbers)
+            random_numbers = [random.randint(min_value, max_value) for _ in range(4)]
+            self.profile_thresholds[criterion] = sorted(random_numbers)
 
     def generate_preferences(self, criterion_value_list):
         """
@@ -161,7 +214,7 @@ class ArgumentAgent(CommunicatingAgent):
         """
         self.preferences = Preferences()
         # set the name of criterion we use by order of importance
-        ordered_crit_names = [crit.name for crit in CriterionName]
+        ordered_crit_names = [crit for crit in CriterionName]
         # Shuffle it so that all the agents have different preferences
         random.shuffle(ordered_crit_names)
         self.preferences.set_criterion_name_list(ordered_crit_names)
@@ -191,41 +244,53 @@ class ArgumentAgent(CommunicatingAgent):
 
         argument = Argument(boolean_decision=True, item=item)
         premisses_pro_item = argument.list_supporting_proposal(item, self.preferences)
-        best_premiss = premisses_pro_item[0]
-        best_premiss_crit_name = best_premiss.get_criterion_name()
-        for prem in premisses_pro_item:
-            crit_name = prem.get_criterion_name()
-            prefered_criterion = self.preferences.is_preferred_criterion(
-                best_premiss_crit_name, crit_name
+        if premisses_pro_item:
+            best_premiss = premisses_pro_item[0]
+            best_premiss_crit_name = best_premiss.get_criterion_name()
+            for prem in premisses_pro_item:
+                crit_name = prem.get_criterion_name()
+                prefered_criterion = self.preferences.is_preferred_criterion(
+                    best_premiss_crit_name, crit_name
+                )
+                if not prefered_criterion:
+                    best_premiss = prem
+                    best_premiss_crit_name = crit_name
+            argument.add_premiss_couple_values(
+                criterion_name=best_premiss.get_criterion_name(),
+                value=best_premiss.get_criterion_value(),
             )
-            if not prefered_criterion:
-                best_premiss = prem
-                best_premiss_crit_name = crit_name
-        argument.add_premiss_couple_values(
-            criterion_name=best_premiss.get_criterion_name(),
-            value=best_premiss.get_value(),
-        )
-        return argument.__str__()
+            return argument.__str__()
+        else:
+            return None
 
     def parse_argument(self, argument_str: str):
         """Recover an argument object from an argument string."""
         conclusion_str, premisses_str = argument_str.split("<=")
-        boolean_decision = True
+        conclusion_str = conclusion_str.replace(" ", "")
         if "NOT" in conclusion_str:
             boolean_decision = False
+            item_str = conclusion_str.split("NOT")[1]
+        else:
+            boolean_decision = True
+            item_str = conclusion_str
         item_argument = None
         for item in self.list_items:
-            if item.get_name() == conclusion_str.split(" ")[1]:
+            if item.get_name() == item_str:
                 item_argument = item
         argument = Argument(boolean_decision=boolean_decision, item=item_argument)
         for prem_str in premisses_str.split(", "):
             if "=" in prem_str:
                 crit_str, value_str = prem_str.split("=")
+                # Remove white spaces
+                crit_str = crit_str.replace(" ", "")
+                value_str = value_str.replace(" ", "")
                 argument.add_premiss_couple_values(
                     CriterionName[crit_str], Value[value_str]
                 )
             elif ">" in prem_str:
                 best_str, worst_str = prem_str.split(">")
+                best_str = best_str.replace(" ", "")
+                worst_str = worst_str.replace("", " ")
                 argument.add_premiss_comparison(
                     CriterionName[best_str], CriterionName[worst_str]
                 )
@@ -287,3 +352,11 @@ class ArgumentAgent(CommunicatingAgent):
                     )
                     counter_arguments.append(counter_arg)
         return counter_arguments
+
+    def remove_item_from_choices(self, item: Item):
+        """Remove an item from the list of possible items."""
+        idx_to_remove = 0
+        for idx, possible_item in enumerate(self.list_items):
+            if possible_item.get_name() == item.get_name():
+                idx_to_remove = idx
+        self.list_items.pop(idx_to_remove)

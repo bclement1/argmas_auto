@@ -20,7 +20,7 @@ class CoupleValue:
         """
         CoupleValue as a string.
         """
-        return self.__criterion_name + "=" + self.__value
+        return self.__criterion_name.name + "=" + self.__value.name
 
     def get_criterion_name(self):
         """

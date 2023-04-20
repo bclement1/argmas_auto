@@ -68,14 +68,24 @@ class ArgumentModel(Model):
                 criterion_value_list.append(CriterionValue(item, crit, value))
 
         self.alice = ArgumentAgent(
-            0, self, "Alice", dest_name="Bob", preferences=Preferences()
+            0,
+            self,
+            "Alice",
+            dest_name="Bob",
+            preferences=Preferences(),
+            list_items=self.list_items.copy(),
         )
-        self.alice.generate_preference_profiles(criterion_value_list)
+        self.alice.generate_preference_profiles(CRITERION_BOUNDS)
         self.alice.generate_preferences(criterion_value_list)
         self.bob = ArgumentAgent(
-            1, self, "Bob", dest_name="Alice", preferences=Preferences()
+            1,
+            self,
+            "Bob",
+            dest_name="Alice",
+            preferences=Preferences(),
+            list_items=self.list_items.copy(),
         )
-        self.bob.generate_preference_profiles(criterion_value_list)
+        self.bob.generate_preference_profiles(CRITERION_BOUNDS)
         self.bob.generate_preferences(criterion_value_list)
 
         self.schedule.add(self.alice)

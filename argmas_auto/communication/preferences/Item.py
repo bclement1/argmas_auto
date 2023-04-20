@@ -23,7 +23,7 @@ class Item:
         """
         for criterion in CriterionName:
             min_value, max_value = bounds[criterion.name]
-            self.criterion_scores[criterion.name] = random.randint(min_value, max_value)
+            self.criterion_scores[criterion] = random.randint(min_value, max_value)
 
     def __str__(self):
         """Returns Item as a String."""
