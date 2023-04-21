@@ -1,3 +1,6 @@
+# Custom files and folder
+old_mesa/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
