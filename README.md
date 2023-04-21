@@ -39,11 +39,35 @@ Pour constituer votre profil de préférences, vous tirer au hasard 4 nombres en
 
 ## Initialisation pré-dialogue
 
-Avant de commencer à argumenter, vous et Luke rassemblez vos idées.
+D'abord, on initialise la liste des 16 moteurs possibles, décrits par leur nom et leur description. Ensuite, on crée la table (absolue, partagée par tous les agents) des scores des moteurs spatiaux selon les critères, selon les bornes minimales et maximales pré-définies. Une fois cette table créée, les agents (Luke et vous-même) êtes créés. Chaque agent génère son profil de notation pour chaque critère en tirant aléatoirement 4 nombres, dans la démarche mentionnée précédemment. Ainsi, chaque agent peut noter les moteurs selon les 5 critères pré-définis. Une notion importante est alors celle du score d'un moteur. En effet, une fois la grille d'évaluation des moteurs générées pour chaque agent en combinant scores absolues des moteurs et profils personnels de préférences, chaque agent possède la même fonction de notation qui permet de donner un score absolu aux moteurs, et ainsi de les ordonner par préférence. Enfin, chaque agent définit son classement personnel de l'importance relative des critères, et garde en mémoire cette liste ordonnée (une par agent).
 
 ## Démarrage du dialogue, conditions de terminaison
 
-C'est toujours vous, jeune Padawan qui commencez l'argumentation (les Jedi aussi ont de bonnes manières !). Le principe est le suivant : 
+Avant de commencer à argumenter, vous et Luke rassemblez vos idées. Vous venez de faire toutes les démarches décrites à la section précédente. C'est toujours vous, jeune Padawan qui commencez l'argumentation (les Jedi aussi ont de bonnes manières !). Le principe est le suivant. 
+Vous sélectionnez votre moteur préféré (celui avec le plus grand score selon votre profil de notation). Vous le proposez (PROPOSE) à votre compagnon Jedi, Luke. À ce stade, deux possibilités. Si le moteur que vous proposez à Luke lui convient (il fait partie de son top 10% personnel), et alors vous convenez d'utiliser ce moteur et quittez la planète au plus : misssion accomplie. Si le moteur ne convient pas à Luke, ce dernier vous demandera les raisons qui vous ont fait choisir ce moteur (ASK_WHY). Le grand Jedi s'adresse à vous : il est maintenant temps de rassembler votre savoir et d'argumenter (ARGUE). Vous répondez alors à Luke avec votre meilleur argument. Ce meilleur argument est déterminé de la façon suivante. Pour le moteur proposé, vous rassemblez toutes les prémisses positives (qui supportent votre choix). Ces prémisses sont en fait les couples (critère, valeur de notation personnelle selon votre profil) pour tous les critères pour lesquels votre notation personnelle est soit Good soit Very Good. Il est alors temps d'utiliser votre liste personnelle d'ordonancement des critères d'évaluation. Parmi toutes les prémisses positives, vous sélectionnez celles relatives au critère le mieux classé dans votre ordonancement général des critères. Exemple : si vous estimez que le critère Durabilité est le plus important de tous, et qu'une prémisse positive relative à la Durabilité est disponible, c'est celle la que vous choisirez. Si elle n'est pas disponible, vous choisirez le second critère dans l'ordre d'importance, et ainsi de suite.
+Ce cher Luke va ensuite recevoir votre argument, l'étudier avec attention (et avec son sabre laser), et va vous répondre avec deux types d'argument possibles.
+D'abord, Luke va rassembler tous les critères préférables au vôtre (de son point de vue, uniquement valable pour lui) pour lesquels votre moteur n'est pas bon (soit Bad, soit Very Bad). Ensuite, il va aussi étudier les contre-propositions qui pourraient vous intéresser, pour tenter de vous convaincre en retour. Ainsi, il va tenter de trouver un moteur qu'il préfère (plus haut que le vôtre dans son ordre de préférences) pour lequel la valeur du critère de votre argument est au moins aussi bonne. Finalement, Luke va vous renvoyer au hasard un argument qui appartiendra à l'un ou l'autre des types d'arguments. Quand vous recevez l'argument de Luke, vous prenez la même démarche que lui : accepter si vous êtes d'accord pour le nouveau moteur, ou contre-attaquer (mais sans sabre laser cette fois !) avec un nouvel argument.
+Le débat se termine quand quelqu'un accepte le moteur proposé ou quand vous êtes à court d'arguments (alors les soldats de l'Empire vous attraperont et vous condamneront aux travaux forcés sur Tatooine pendant 3 cycles solaires).
+
+## Lancement du code
+
+Pour utiliser le projet, il faut commencer par clone le présent dépôt en local sur votre machine. Lancer la commande : 
+```bash
+git clone https://github.com/bclement1/argmas_auto
+```
+Ensuite, se placer dans le dossier (à la racine du clone) : 
+```bash
+cd argmas_auto
+```
+À ce stade, vous devriez voir les fichiers suivants : la licence, le fichier .gitignore, le dossier `images/` contenant les images du README, le dossier `instructions/` contenant le sujet du projet, un dossier `tests/` et le dossier principal, `argmas_auto/`. Ce dernier contient l'exécutable, `__main__.py`.
+Il est désormais temps d'installer les dépendances du projet :
+```bash
+pip install .
+```
+Enfin, pour lancer le dialogue entre nos deux agents, il faut se placer à la racine du projet Git et lancer la commande suivante :
+```bash 
+python -m argmax_auto
+```
 
 ## Améliorations futures
 
