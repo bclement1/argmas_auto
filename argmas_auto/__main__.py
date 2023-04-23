@@ -1,7 +1,7 @@
 """ 
 Project's entry point.
 """
-
+import time
 import random
 
 from mesa import Model
@@ -16,6 +16,7 @@ from argmas_auto.communication.mailbox.Mailbox import Mailbox
 
 from argmas_auto.argumentation_model import ArgumentModel
 
+TIMEOUT = 60
 
 if __name__ == "__main__":
     argument_model = ArgumentModel()
@@ -24,5 +25,13 @@ if __name__ == "__main__":
     MessageService.get_instance().set_instant_delivery(False)
 
     # run a step
-    for i in range(10):
+    start_time = time.time()
+    end_time = time.time()
+    print("Luke and You have " + str(TIMEOUT) + " seconds to debate.")
+    while (end_time - start_time < TIMEOUT) and argument_model.running:
         argument_model.step()
+        end_time = time.time()
+    if not argument_model.running:
+        print("You and Luke repare the X-wing and leave Tatooine.")
+    else:
+        print("Too late, the Empire caught You and Luke.")

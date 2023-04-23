@@ -240,6 +240,7 @@ class ArgumentAgent(CommunicatingAgent):
                 )
                 self.send_message(mess)
                 self.remove_item_from_choices(messages[0].get_content())
+                self.model.running = False
 
             elif (
                 messages and messages[0].get_performative() == MessagePerformative.ARGUE
@@ -305,6 +306,7 @@ class ArgumentAgent(CommunicatingAgent):
                     messages[0].get_content(),
                 )
                 self.send_message(mess)
+                self.model.running = False
 
     def get_preferences(self):
         """
