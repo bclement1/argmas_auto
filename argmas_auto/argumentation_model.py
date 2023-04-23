@@ -70,8 +70,8 @@ class ArgumentModel(Model):
         self.alice = ArgumentAgent(
             0,
             self,
-            "Alice",
-            dest_name="Bob",
+            "You",
+            dest_name="Luke",
             preferences=Preferences(),
             list_items=self.list_items.copy(),
         )
@@ -80,18 +80,31 @@ class ArgumentModel(Model):
         self.bob = ArgumentAgent(
             1,
             self,
-            "Bob",
-            dest_name="Alice",
+            "Luke",
+            dest_name="You",
             preferences=Preferences(),
             list_items=self.list_items.copy(),
         )
         self.bob.generate_preference_profiles(CRITERION_BOUNDS)
         self.bob.generate_preferences(criterion_value_list)
-
         self.schedule.add(self.alice)
-        print("[ArgumentModel] Created Agent Alice.")
+        print("[ArgumentModel] Created Agent You.")
+        your_top_engines = [
+            item.get_description()
+            for item in self.list_items
+            if self.alice.preferences.is_item_among_top_10_percent(
+                item, self.list_items
+            )
+        ]
+        print(f"Your short-list of engines is: {your_top_engines}")
         self.schedule.add(self.bob)
-        print("[ArgumentModel] Created Agent Bob.")
+        print("[ArgumentModel] Created Agent Luke Skywalker (TA TA TADADA).")
+        luke_top_engines = [
+            item.get_description()
+            for item in self.list_items
+            if self.bob.preferences.is_item_among_top_10_percent(item, self.list_items)
+        ]
+        print(f"Luke's short-list of engines is: {luke_top_engines}")
         self.running = True
 
     def step(self):

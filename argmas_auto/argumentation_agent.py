@@ -51,8 +51,8 @@ class ArgumentAgent(CommunicatingAgent):
         Note: agents communicate while they disagree, then switch destinary.
         """
         super().step()
-        if self.name == "Alice":
-            # Alice reads the message she received
+        if self.name == "You":
+            # You read the message you received
             messages = self.get_new_messages()
             if messages:
                 print(f"{self.name} received: {messages[0]}")
@@ -72,7 +72,7 @@ class ArgumentAgent(CommunicatingAgent):
                 messages
                 and messages[0].get_performative() == MessagePerformative.ASK_WHY
             ):
-                # Alice argues for its proposal
+                # You argue for your proposal
                 best_argument = self.support_proposal(self.preferred_item)
                 if best_argument:
                     mess = Message(
@@ -99,7 +99,7 @@ class ArgumentAgent(CommunicatingAgent):
                 messages
                 and messages[0].get_performative() == MessagePerformative.ACCEPT
             ):
-                # Bob accepted the item, Alice terminates the conversation
+                # Luke accepted the item, You terminate the conversation
                 mess = Message(
                     self.name,
                     self.dest_name,
@@ -110,7 +110,7 @@ class ArgumentAgent(CommunicatingAgent):
                 # remove the accepted item from the list of items
                 self.remove_item_from_choices(self.preferred_item)
 
-        if self.name == "Bob":
+        if self.name == "Luke":
             messages = self.get_new_messages()
             if messages:
                 print(f"{self.name} received: {messages[0]}")
@@ -156,7 +156,7 @@ class ArgumentAgent(CommunicatingAgent):
                 messages
                 and messages[0].get_performative() == MessagePerformative.COMMIT
             ):
-                # Bob knows that Alice terminates and terminates himself
+                # Luke knows that You terminates and terminates himself
                 mess = Message(
                     self.name,
                     self.dest_name,
