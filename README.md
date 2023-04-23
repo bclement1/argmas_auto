@@ -87,12 +87,17 @@ Vous devriez alors voir apparaître un dialogue entre vous-même et Luke dans le
 Vous trouvez ci-dessous un exemple de dialogue entre vous et Luke dans le cas où vous tombez tous deux d'accord sur le moteur à utiliser sans argumentation (cas où vos listes de moteurs favoris ont des éléments en commun) :
 <br>
 <br>
-<img alt="Exemple de dialogue, cas où les listes de moteurs favoris s'intersectent." src="images/dialog-example.png" height="300">
-
+<img alt="Exemple de dialogue, cas où les listes de moteurs favoris s'intersectent." src="images/dialog-example.png" height="150">
+<br>
+<br>
+Il est aussi possible d'arriver à un accord commun après argumentation, comme l'illustre l'exemple ci-dessous :
+<br>
+<br>
+<img alt="Exemple de dialogue, cas de l'accord après argumentation." src="images/dialog-example-2.png" height="150">
 
 ## Améliorations futures
 
-Les améliorations présentées dans cette partie ont soit été réalisées (), soit auraient été réalisées avec plus de temps.
+Les améliorations présentées dans cette partie auraient été réalisées avec plus de temps.
 
 - Mettre en place un troisième Agent : la princesse Leïa. La princesse a également un profil de préférence indépendant et les trois agents débatent deux à deux pour se mettre d'accord sur le moteur à utiliser.
 - Intégrer une partie d'interactif dans le projet : demander à l'utilisateur de donner son propre ordre des critères et son propre profil de préférences afin de pouvoir générer le dialogue optimale du point de vue de l'utilisateur.
