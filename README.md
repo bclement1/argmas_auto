@@ -82,6 +82,14 @@ python -m argmax_auto
 ```
 Vous devriez alors voir apparaître un dialogue entre vous-même et Luke dans le terminal. Ce dialogue contient une part d'aléatoire. Ainsi, si c'est toujours vous qui commencez le dialogue, vous ne verrez pas les mêmes arguments ou les mêmes moteurs dans le débat entre deux lancements.
 
+## Exemples de dialogues générés
+
+Vous trouvez ci-dessous un exemple de dialogue entre vous et Luke dans le cas où vous tombez tous deux d'accord sur le moteur à utiliser sans argumentation (cas où vos listes de moteurs favoris ont des éléments en commun) :
+<br>
+<br>
+<img alt="Exemple de dialogue, cas où les listes de moteurs favoris s'intersectent." src="images/dialog-example.png" height="300">
+
+
 ## Améliorations futures
 
 Les améliorations présentées dans cette partie ont soit été réalisées (), soit auraient été réalisées avec plus de temps.
