@@ -26,15 +26,3 @@ if __name__ == "__main__":
     # run a step
     for i in range(10):
         argument_model.step()
-
-    # get a random item
-    # item = argument_model.alice.preference
-
-    # create proposal Message
-
-    # m2 = Message(
-    #     argument_model.bob.name,
-    #     argument_model.alice.name,
-    #     MessagePerformative.ACCEPT,
-    #     item,
-    # )

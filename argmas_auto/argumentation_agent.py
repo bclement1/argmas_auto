@@ -51,12 +51,13 @@ class ArgumentAgent(CommunicatingAgent):
         Note: agents communicate while they disagree, then switch destinary.
         """
         super().step()
-        if self.name == "Alice":
-            # Alice reads the message she received
+        if self.name == "You":
+            # You read the message you received
             messages = self.get_new_messages()
             if messages:
                 print(f"{self.name} received: {messages[0]}")
             if not messages and not self.conversation_started[self.dest_name]:
+                # Starting the conversation with a PROPOSE
                 print(f"{self.name} initiating the conversation.")
                 self.conversation_started[self.dest_name] = True
                 # propose an item
@@ -72,7 +73,7 @@ class ArgumentAgent(CommunicatingAgent):
                 messages
                 and messages[0].get_performative() == MessagePerformative.ASK_WHY
             ):
-                # Alice argues for its proposal
+                # You proposed an engine and received an ASK_WHY: argue for your proposal
                 best_argument = self.support_proposal(self.preferred_item)
                 if best_argument:
                     mess = Message(
@@ -99,7 +100,7 @@ class ArgumentAgent(CommunicatingAgent):
                 messages
                 and messages[0].get_performative() == MessagePerformative.ACCEPT
             ):
-                # Bob accepted the item, Alice terminates the conversation
+                # Luke accepted the item, You terminate the conversation
                 mess = Message(
                     self.name,
                     self.dest_name,
@@ -110,18 +111,41 @@ class ArgumentAgent(CommunicatingAgent):
                 # remove the accepted item from the list of items
                 self.remove_item_from_choices(self.preferred_item)
 
-        if self.name == "Bob":
-            messages = self.get_new_messages()
-            if messages:
-                print(f"{self.name} received: {messages[0]}")
-            if (
+            elif (
+                messages and messages[0].get_performative() == MessagePerformative.ARGUE
+            ):
+                pro_argument = self.parse_argument(
+                    argument_str=messages[0].get_content()
+                )
+                con_arguments = self.attack_argument(pro_argument)
+                if con_arguments:
+                    # Choose one counter-argument at random
+                    chosen_con_arg = random.choice(con_arguments)
+                    mess = Message(
+                        self.name,
+                        self.dest_name,
+                        MessagePerformative.ARGUE,
+                        content=str(chosen_con_arg),
+                    )
+                    self.send_message(mess)
+                else:
+                    mess = Message(
+                        self.name,
+                        self.dest_name,
+                        MessagePerformative.ACCEPT,
+                        pro_argument.item,
+                    )
+                    self.send_message(mess)
+            elif (
                 messages
                 and messages[0].get_performative() == MessagePerformative.PROPOSE
             ):
-                if self.preferences.is_item_among_top_10_percent(
+                is_among_top_10 = self.preferences.is_item_among_top_10_percent(
                     item=messages[0].get_content(), item_list=self.list_items
-                ):
-                    # item proposed in the top 10% of Bob
+                )
+                if is_among_top_10:
+                    print(f"The engine is among {self.name}'s top 10%.")
+                    # item proposed in the top 10% of Luke
                     self.preferred_item = self.preferences.most_preferred(
                         self.list_items
                     )
@@ -129,13 +153,64 @@ class ArgumentAgent(CommunicatingAgent):
                         self.preferred_item.get_name()
                         != messages[0].get_content().get_name()
                     ):
+                        print("Proposing even better.")
                         mess = Message(
                             self.name,
                             self.dest_name,
                             MessagePerformative.PROPOSE,
                             content=self.preferred_item,
                         )
+                        self.send_message(mess)
                     else:
+                        print("Accepting the proposal.")
+                        mess = Message(
+                            self.name,
+                            self.dest_name,
+                            MessagePerformative.ACCEPT,
+                            messages[0].get_content(),
+                        )
+                        self.send_message(mess)
+                else:
+                    # item is not among Agent's favorites: send ASK_WHY
+                    mess = Message(
+                        self.name,
+                        self.dest_name,
+                        MessagePerformative.ASK_WHY,
+                        messages[0].get_content(),
+                    )
+                    self.send_message(mess)
+
+        if self.name == "Luke":
+            messages = self.get_new_messages()
+            if messages:
+                print(f"{self.name} received: {messages[0]}")
+            if (
+                messages
+                and messages[0].get_performative() == MessagePerformative.PROPOSE
+            ):
+                is_among_top_10 = self.preferences.is_item_among_top_10_percent(
+                    item=messages[0].get_content(), item_list=self.list_items
+                )
+                if is_among_top_10:
+                    print(f"The engine is among {self.name}'s top 10%.")
+                    # item proposed in the top 10% of Luke
+                    self.preferred_item = self.preferences.most_preferred(
+                        self.list_items
+                    )
+                    if (
+                        self.preferred_item.get_name()
+                        != messages[0].get_content().get_name()
+                    ):
+                        print("Proposing even better.")
+                        mess = Message(
+                            self.name,
+                            self.dest_name,
+                            MessagePerformative.PROPOSE,
+                            content=self.preferred_item,
+                        )
+                        self.send_message(mess)
+                    else:
+                        print("Accepting the proposal.")
                         mess = Message(
                             self.name,
                             self.dest_name,
@@ -156,7 +231,7 @@ class ArgumentAgent(CommunicatingAgent):
                 messages
                 and messages[0].get_performative() == MessagePerformative.COMMIT
             ):
-                # Bob knows that Alice terminates and terminates himself
+                # Luke knows that You terminates and terminates himself
                 mess = Message(
                     self.name,
                     self.dest_name,
@@ -191,6 +266,45 @@ class ArgumentAgent(CommunicatingAgent):
                         pro_argument.item,
                     )
                     self.send_message(mess)
+
+            elif (
+                messages
+                and messages[0].get_performative() == MessagePerformative.ASK_WHY
+            ):
+                # You proposed an engine and received an ASK_WHY: argue for your proposal
+                best_argument = self.support_proposal(self.preferred_item)
+                if best_argument:
+                    mess = Message(
+                        self.name,
+                        self.dest_name,
+                        MessagePerformative.ARGUE,
+                        best_argument,
+                    )
+                    self.send_message(mess)
+                else:
+                    self.remove_item_from_choices(item=self.preferred_item)
+                    self.preferred_item = self.preferences.most_preferred(
+                        self.list_items
+                    )
+                    mess = Message(
+                        self.name,
+                        self.dest_name,
+                        MessagePerformative.PROPOSE,
+                        self.preferred_item,
+                    )
+                    self.send_message(mess)
+            elif (
+                messages
+                and messages[0].get_performative() == MessagePerformative.ACCEPT
+            ):
+                # You accepted the item, Luke terminates the conversation
+                mess = Message(
+                    self.name,
+                    self.dest_name,
+                    MessagePerformative.COMMIT,
+                    messages[0].get_content(),
+                )
+                self.send_message(mess)
 
     def get_preferences(self):
         """
@@ -267,6 +381,7 @@ class ArgumentAgent(CommunicatingAgent):
         """Recover an argument object from an argument string."""
         conclusion_str, premisses_str = argument_str.split("<=")
         conclusion_str = conclusion_str.replace(" ", "")
+        premisses_str = premisses_str.replace(" ", "")
         if "NOT" in conclusion_str:
             boolean_decision = False
             item_str = conclusion_str.split("NOT")[1]
@@ -278,7 +393,8 @@ class ArgumentAgent(CommunicatingAgent):
             if item.get_name() == item_str:
                 item_argument = item
         argument = Argument(boolean_decision=boolean_decision, item=item_argument)
-        for prem_str in premisses_str.split(", "):
+        for prem_str in premisses_str.split(","):
+            prem_str = prem_str.replace(" ", ",")
             if "=" in prem_str:
                 crit_str, value_str = prem_str.split("=")
                 # Remove white spaces
@@ -290,7 +406,7 @@ class ArgumentAgent(CommunicatingAgent):
             elif ">" in prem_str:
                 best_str, worst_str = prem_str.split(">")
                 best_str = best_str.replace(" ", "")
-                worst_str = worst_str.replace("", " ")
+                worst_str = worst_str.replace(" ", "")
                 argument.add_premiss_comparison(
                     CriterionName[best_str], CriterionName[worst_str]
                 )
